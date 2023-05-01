@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "329252786830",
+    "firebase_url": "https://webarvsar-default-rtdb.firebaseio.com",
+    "project_id": "webarvsar",
+    "storage_bucket": "webarvsar.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329252786830:android:0f12256507b793ab662fdf",
+        "android_client_info": {
+          "package_name": "com.google.ar.core.examples.kotlin.helloar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "329252786830-9hg5vlqp7thrlob56momqndq8kt92080.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOHLtrYH_p-7NLc4hlqv_icPSL-kZ7Po8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "329252786830-9hg5vlqp7thrlob56momqndq8kt92080.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329252786830:android:01a57ef28f2794a5662fdf",
+        "android_client_info": {
+          "package_name": "com.wheic.arapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "329252786830-9hg5vlqp7thrlob56momqndq8kt92080.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOHLtrYH_p-7NLc4hlqv_icPSL-kZ7Po8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "329252786830-9hg5vlqp7thrlob56momqndq8kt92080.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

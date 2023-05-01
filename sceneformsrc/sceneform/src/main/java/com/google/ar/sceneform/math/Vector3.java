@@ -336,4 +336,5 @@ public class Vector3 {
     result.setLeft();
     return result;
   }
+
 }

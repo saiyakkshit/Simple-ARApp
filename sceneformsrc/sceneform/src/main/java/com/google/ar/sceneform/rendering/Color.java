@@ -48,7 +48,8 @@ public class Color {
     set(argb);
   }
 
-  /** Set to the values of another color. */
+
+    /** Set to the values of another color. */
   public void set(Color color) {
     set(color.r, color.g, color.b, color.a);
   }
