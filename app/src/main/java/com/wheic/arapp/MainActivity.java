@@ -15,9 +15,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.ar.core.Anchor;
-import com.google.ar.core.HitResult;
 import com.google.ar.core.Pose;
-import com.google.ar.core.exceptions.NotTrackingException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
@@ -28,12 +26,13 @@ import com.google.firebase.perf.metrics.Trace;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
     private ArFragment arCam; //object of ArFragment Class
+    private ModelRenderable duckRenderable;
+
 
     private int clickNo = 0; //helps to render the 3d model only once when we tap the screen
 
@@ -93,33 +92,35 @@ public class MainActivity extends AppCompatActivity {
 
             StorageReference modelRef = storageRef.child("models/Rover.glb");
             FirebasePerformance.getInstance().setPerformanceCollectionEnabled(true);
+            final String GLTF_ASSET =
+                    "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/object.glb?alt=media&token=c3661763-4475-4491-b5f0-e6d3aff7173f";
 
 
 
-                    arCam = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arCameraArea);
+
+            arCam = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.arCameraArea);
             //ArFragment is linked up with its respective id used in the activity_main.xml
 
             arCam.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
                 clickNo++;
                 //the 3d model comes to the scene only when clickNo is one that means once
-                if (clickNo == 1) {
-                    Anchor anchor = hitResult.createAnchor(); // declare a local variable here
+                if (clickNo == 1) {// declare a local variable here
                     FirebasePerformance.getInstance().startTrace("network_request");
+
+                    Anchor anchor = hitResult.createAnchor();
                     ModelRenderable.builder()
-                            .setSource(this, Uri.parse("https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2Fhummingbird.glb?alt=media&token=c98041b4-aff3-4187-93b4-cdf50bdbde2c"))
+                            .setSource(this, Uri.parse(GLTF_ASSET))
+                            .setIsFilamentGltf(true)
                             .build()
-                            .thenAccept(modelRenderable -> {
-                                //FirebasePerformance.getInstance().stopTrace("network_request");
-                                addModel(modelRenderable); // pass the anchor variable as an argument
-                            })
+                            .thenAccept(modelRenderable -> addModel(anchor, modelRenderable))
                             .exceptionally(throwable -> {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                                builder.setMessage("Something went wrong: " + throwable.getMessage()).show();
+                                builder.setMessage("Somthing is not right" + throwable.getMessage()).show();
                                 return null;
                             });
                 }
-            });
 
+            });
 
         } else {
 
@@ -130,30 +131,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void addModel(ModelRenderable modelRenderable) {
+    private void addModel(Anchor anchor, ModelRenderable modelRenderable) {
 
-        // Convert Sceneform Vector3 to ARCore Vector3
-        Vector3 worldPosition = arCam.getArSceneView().getScene().getCamera().getWorldPosition();
-        Vector3 forward = arCam.getArSceneView().getScene().getCamera().getForward();
-        float[] arCoreWorldPosition = new float[]{worldPosition.x, worldPosition.y, -worldPosition.z};
-        float[] arCoreForward = new float[]{forward.x, forward.y, -forward.z};
-
-        // Create a pose at the camera position and facing forward
-        Pose cameraPose = new Pose(arCoreWorldPosition, arCoreForward);
-
-        // Create an anchor at the camera pose
-        Anchor anchor = Objects.requireNonNull(arCam.getArSceneView().getSession()).createAnchor(cameraPose);
-
-        // Creating a new anchor at the camera position
         AnchorNode anchorNode = new AnchorNode(anchor);
+        // Creating a AnchorNode with a specific anchor
         anchorNode.setParent(arCam.getArSceneView().getScene());
-
-        // Create a TransformableNode for the model
+        //attaching the anchorNode with the ArFragment
         TransformableNode model = new TransformableNode(arCam.getTransformationSystem());
         model.setParent(anchorNode);
+        //attaching the anchorNode with the TransformableNode
         model.setRenderable(modelRenderable);
+        //attaching the 3d model with the TransformableNode that is already attached with the node
         model.select();
+
     }
-
-
 }
