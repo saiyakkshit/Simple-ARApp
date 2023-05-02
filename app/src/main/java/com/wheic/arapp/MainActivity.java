@@ -30,8 +30,11 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArFragment arCam; //object of ArFragment Class
-    private ModelRenderable duckRenderable;
+    private ArFragment arCam;
+
+    Trace myTrace = FirebasePerformance.getInstance().newTrace("my_trace");
+
+//object of ArFragment Class
 
 
     private int clickNo = 0; //helps to render the 3d model only once when we tap the screen
@@ -66,14 +69,13 @@ public class MainActivity extends AppCompatActivity {
 
         //firebase performance SDK
         FirebasePerformance.getInstance().setPerformanceCollectionEnabled(true);
+        myTrace.start();
 
 
         //to inherit the above firebase storage reference
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
-        Trace myTrace = FirebasePerformance.getInstance().newTrace("my_trace");
-
 
         //button for the crash in the app
 
@@ -90,10 +92,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (checkSystemSupport(this)) {
 
-            StorageReference modelRef = storageRef.child("models/Rover.glb");
+
+
+            StorageReference modelRef = storageRef.child("https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2Fhummingbird.glb?alt=media&token=c98041b4-aff3-4187-93b4-cdf50bdbde2c");
             FirebasePerformance.getInstance().setPerformanceCollectionEnabled(true);
             final String GLTF_ASSET =
-                    "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/object.glb?alt=media&token=c3661763-4475-4491-b5f0-e6d3aff7173f";
+                    "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2FDragon%20animation%20standing.glb?alt=media&token=092320bb-4f0d-40c4-95b8-8015736d17ff";
+            final String GLTF_ASSET_1 = "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2Fmilk_delivery.glb?alt=media&token=5c6a0bc5-25e2-4802-a251-ddd719501a8b";
 
 
 
@@ -102,31 +107,31 @@ public class MainActivity extends AppCompatActivity {
             //ArFragment is linked up with its respective id used in the activity_main.xml
 
             arCam.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
-                clickNo++;
-                //the 3d model comes to the scene only when clickNo is one that means once
-                if (clickNo == 1) {// declare a local variable here
-                    FirebasePerformance.getInstance().startTrace("network_request");
+                FirebasePerformance.getInstance().startTrace("network_request");
+                Anchor anchor = hitResult.createAnchor();
+                myTrace.putAttribute("url", GLTF_ASSET);
+                myTrace.putAttribute("method", "GET");
 
-                    Anchor anchor = hitResult.createAnchor();
-                    ModelRenderable.builder()
-                            .setSource(this, Uri.parse(GLTF_ASSET))
-                            .setIsFilamentGltf(true)
-                            .build()
-                            .thenAccept(modelRenderable -> addModel(anchor, modelRenderable))
-                            .exceptionally(throwable -> {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                                builder.setMessage("Somthing is not right" + throwable.getMessage()).show();
-                                return null;
-                            });
-                }
-
+                ModelRenderable.builder()
+                        .setSource(this, Uri.parse(GLTF_ASSET))
+                        .setIsFilamentGltf(true)
+                        .build()
+                        .thenAccept(modelRenderable -> {
+                            addModel(anchor, modelRenderable);
+                            clickNo++;
+                        })
+                        .exceptionally(throwable -> {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                            builder.setMessage("Somthing is not right" + throwable.getMessage()).show();
+                            return null;
+                        });
             });
 
-        } else {
 
-            return;
 
         }
+
+        myTrace.stop();
 
 
     }
@@ -145,4 +150,6 @@ public class MainActivity extends AppCompatActivity {
         model.select();
 
     }
+
+
 }
