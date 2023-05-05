@@ -1,2 +1,2 @@
 # Simple-ARApp
-This is an Augmented Reality app for Android Phones made in Android Studio. 
+This is an Augmented Reality app which uses firebase storage service to load the objects
