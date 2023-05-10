@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
  * @hide
  */
 public class LoadHelper {
+
   private static final String TAG = LoadHelper.class.getName();
   // From https://developer.android.com/reference/android/content/res/Resources
   // The value 0 is an invalid identifier.

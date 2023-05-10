@@ -9,6 +9,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -26,13 +27,25 @@ import com.google.firebase.perf.metrics.Trace;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.IOException;
 import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 public class MainActivity extends AppCompatActivity {
 
     private ArFragment arCam;
 
-    Trace myTrace = FirebasePerformance.getInstance().newTrace("my_trace");
+    static Trace myTrace = FirebasePerformance.getInstance().newTrace("my_trace");
+    Trace network_requests = FirebasePerformance.getInstance().newTrace("Network_Requests");
+
+
 
 //object of ArFragment Class
 
@@ -40,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private int clickNo = 0; //helps to render the 3d model only once when we tap the screen
 
     public static boolean checkSystemSupport(Activity activity) {
+        myTrace.start();
 
         //checking whether the API version of the running Android >= 24 that means Android Nougat 7.0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -68,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //firebase performance SDK
-        FirebasePerformance.getInstance().setPerformanceCollectionEnabled(true);
-        myTrace.start();
 
 
         //to inherit the above firebase storage reference
@@ -92,13 +104,62 @@ public class MainActivity extends AppCompatActivity {
 
         if (checkSystemSupport(this)) {
 
+            myTrace.getAppState();
+
+            network_requests.start();
+            final String GLTF_ASSET_1 = "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2Fhummingbird.glb?alt=media&token=c98041b4-aff3-4187-93b4-cdf50bdbde2c";
+
+            OkHttpClient client = new OkHttpClient.Builder()
+
+                    .addInterceptor(new Interceptor() {
+                        @Override
+                        public Response intercept(Chain chain) throws IOException {
+                            Request request = chain.request();
+
+                            // Start timing the request
+                            long startTime = System.nanoTime();
+
+                            // Make the request
+                            Response response = chain.proceed(request);
+
+                            // Stop timing the request
+                            long endTime = System.nanoTime();
+                            long duration = endTime - startTime;
+
+                            // Log the request and response
+                            Log.d("NetworkTrace", request.url().toString() + " took " + duration + "ns");
+
+                            return response;
+                        }
+                    })
+                    .build();
+
+
+
 
 
             StorageReference modelRef = storageRef.child("https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2Fhummingbird.glb?alt=media&token=c98041b4-aff3-4187-93b4-cdf50bdbde2c");
             FirebasePerformance.getInstance().setPerformanceCollectionEnabled(true);
             final String GLTF_ASSET =
-                    "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2FDragon%20animation%20standing.glb?alt=media&token=092320bb-4f0d-40c4-95b8-8015736d17ff";
-            final String GLTF_ASSET_1 = "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2Fmilk_delivery.glb?alt=media&token=5c6a0bc5-25e2-4802-a251-ddd719501a8b";
+                    "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/test_models%2Fmodel_1_m.glb?alt=media&token=fd67766e-dda3-4ee0-b38b-9c131aad92db";          Request request = new Request.Builder()
+                    .url(GLTF_ASSET)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    // Handle failure
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    // Handle success
+                }
+            });
+
+
+            //Response response = client.newCall(request).execute();
+
 
 
 
@@ -107,13 +168,10 @@ public class MainActivity extends AppCompatActivity {
             //ArFragment is linked up with its respective id used in the activity_main.xml
 
             arCam.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
-                FirebasePerformance.getInstance().startTrace("network_request");
                 Anchor anchor = hitResult.createAnchor();
-                myTrace.putAttribute("url", GLTF_ASSET);
-                myTrace.putAttribute("method", "GET");
 
                 ModelRenderable.builder()
-                        .setSource(this, Uri.parse(GLTF_ASSET))
+                        .setSource(this, Uri.parse(String.valueOf(GLTF_ASSET)))
                         .setIsFilamentGltf(true)
                         .build()
                         .thenAccept(modelRenderable -> {
@@ -131,12 +189,13 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        myTrace.stop();
+
 
 
     }
 
     private void addModel(Anchor anchor, ModelRenderable modelRenderable) {
+        network_requests.start();
 
         AnchorNode anchorNode = new AnchorNode(anchor);
         // Creating a AnchorNode with a specific anchor
@@ -148,8 +207,12 @@ public class MainActivity extends AppCompatActivity {
         model.setRenderable(modelRenderable);
         //attaching the 3d model with the TransformableNode that is already attached with the node
         model.select();
+        network_requests.stop();
 
     }
 
+    public Trace getNetwork_requests() {
 
+        return network_requests;
+    }
 }
