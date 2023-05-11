@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
             myTrace.getAppState();
 
             network_requests.start();
-            final String GLTF_ASSET_1 = "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/models%2Fhummingbird.glb?alt=media&token=c98041b4-aff3-4187-93b4-cdf50bdbde2c";
+            final String GLTF_ASSET_1 = "https://firebasestorage.googleapis.com/v0/b/webarvsar.appspot.com/o/test_models%2Fmodel_1_h.glb?alt=media&token=a8c1b820-8981-4f93-bda5-13547cf2f519";
 
             OkHttpClient client = new OkHttpClient.Builder()
 
