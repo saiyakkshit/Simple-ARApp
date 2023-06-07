@@ -90,12 +90,13 @@ public class MainActivity extends AppCompatActivity {
         StorageReference storageRef = storage.getReference();
 
         //button for the crash in the app
+        //which is being monited at firebase by using firebase sdk
 
         Button crashButton = new Button(this);
         crashButton.setText("Crash");
         crashButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                throw new RuntimeException("Crash"); // Force a crash
+                throw new RuntimeException("Exit"); // Force a crash
             }
         });
         addContentView(crashButton, new ViewGroup.LayoutParams(
